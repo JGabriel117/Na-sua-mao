@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block titulo %}Criar conta - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-xl bg-white border border-gray-100 rounded-2xl shadow-sm px-8 py-10">
+    <p class="text-center text-sm font-bold text-indigo-600">Na sua mão</p>
+    <h1 class="text-center text-3xl font-extrabold text-gray-900 mt-2">Junte-se à vizinhança</h1>
+    <p class="text-center text-sm text-gray-500 mt-2">Crie sua conta para alugar ou anunciar ferramentas.</p>
+
+    {% if erro %}
+      <div class="mt-6 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm px-4 py-3">{{ erro }}</div>
+    {% endif %}
+
+    <form method="post" action="/cadastro" class="mt-7 space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-2">Nome Completo</label>
+        <input name="nome" type="text" value="{{ nome or '' }}" required placeholder="Ex: João da Silva"
+               class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-2">E-mail</label>
+        <input name="email" type="email" value="{{ email or '' }}" required placeholder="seu@email.com"
+               class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">CPF</label>
+          <input name="cpf" type="text" value="{{ cpf or '' }}" required placeholder="000.000.000-00" maxlength="14"
+                 class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">CEP</label>
+          <input name="cep" type="text" value="{{ cep or '' }}" placeholder="00000-000" maxlength="9"
+                 class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+          <p class="text-[11px] text-gray-400 mt-1.5">Ajuda a mostrar ferramentas perto de você.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Senha</label>
+          <input name="senha" type="password" required placeholder="Mínimo 6 caracteres"
+                 class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Confirmar Senha</label>
+          <input name="confirmacao" type="password" required placeholder="Repita a senha"
+                 class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+        </div>
+      </div>
+
+      <label class="flex items-start gap-3 text-xs text-gray-500 leading-relaxed">
+        <input type="checkbox" name="lgpd" value="1" required
+               class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600">
+        <span>Declaro que li e concordo com os
+          <a href="#" class="text-indigo-600 font-semibold">Termos de Uso</a> e a
+          <a href="#" class="text-indigo-600 font-semibold">Política de Privacidade (LGPD)</a>.
+        </span>
+      </label>
+
+      <button type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-3 rounded-lg transition">
+        Criar minha conta
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500 mt-6">
+      Já tem uma conta? <a href="/login" class="text-indigo-600 font-semibold">Faça login aqui</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

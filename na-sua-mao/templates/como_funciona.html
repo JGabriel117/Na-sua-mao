@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titulo %}Como funciona - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-5xl mx-auto px-6 pt-12">
+  <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Como funciona</h1>
+  <p class="text-gray-500 mt-2">Compartilhar ferramentas com a vizinhança é simples e seguro.</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
+    {% for passo in [
+      ('01', 'Encontre', 'Busque a ferramenta por texto, categoria, voltagem e distância máxima.'),
+      ('02', 'Solicite', 'Escolha as datas, aceite o Contrato de Locação e o Termo de Responsabilidade e envie o pedido.'),
+      ('03', 'Combine', 'O vizinho aprova no chat, vocês combinam a retirada e a devolução é registrada no painel.')
+    ] %}
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+        <p class="text-xs font-extrabold text-indigo-600">{{ passo[0] }}</p>
+        <p class="font-bold text-gray-900 mt-2">{{ passo[1] }}</p>
+        <p class="text-sm text-gray-500 mt-2 leading-relaxed">{{ passo[2] }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div id="duvidas" class="bg-white border border-gray-100 rounded-2xl shadow-sm p-8 mt-8">
+    <h2 class="text-xl font-bold text-gray-900">Dúvidas frequentes</h2>
+    <dl class="mt-5 space-y-5">
+      <div>
+        <dt class="text-sm font-semibold text-gray-900">O pagamento acontece pela plataforma?</dt>
+        <dd class="text-sm text-gray-500 mt-1">Não. O pagamento é combinado diretamente entre os vizinhos; a plataforma organiza prazos, contrato e histórico.</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-gray-900">Como funciona o Termo de Responsabilidade?</dt>
+        <dd class="text-sm text-gray-500 mt-1">Toda reserva exige o aceite eletrônico do termo. O texto completo pode ser lido no checkout ou em <a href="/termo" class="text-indigo-600 font-semibold">Termo de Responsabilidade</a>; o aceite é armazenado com hash SHA-256.</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-gray-900">As datas reservadas ficam visíveis para todos?</dt>
+        <dd class="text-sm text-gray-500 mt-1">Não. Por privacidade, o anúncio não exibe a agenda de outros usuários. Ao solicitar um período indisponível, o sistema informa a indisponibilidade e pede que você escolha outras datas.</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-gray-900">Como denunciar um anúncio ou usuário?</dt>
+        <dd class="text-sm text-gray-500 mt-1">Na página do anúncio, use o botão “Denunciar anúncio / usuário”. A denúncia vai para a moderação, que pode aprovar, rejeitar e suspender o anúncio ou a conta.</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-gray-900">Quais formatos de foto são aceitos?</dt>
+        <dd class="text-sm text-gray-500 mt-1">PNG, JPEG, JPG e WEBP. As imagens são otimizadas automaticamente para no máximo 500 KB.</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-gray-900">Posso alugar minha própria ferramenta?</dt>
+        <dd class="text-sm text-gray-500 mt-1">Não. O sistema bloqueia o auto-aluguel e também impede reservas sobrepostas na mesma ferramenta, sem expor as datas de outros usuários.</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+{% endblock %}

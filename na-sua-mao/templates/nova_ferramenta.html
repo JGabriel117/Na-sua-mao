@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block titulo %}Anunciar ferramenta - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <div class="bg-white border border-gray-100 rounded-2xl shadow-sm px-8 py-9">
+    <h1 class="text-center text-2xl font-extrabold text-gray-900">Anuncie sua ferramenta</h1>
+    <p class="text-center text-sm text-gray-500 mt-2">Rentabilize o que está parado e ajude a vizinhança.</p>
+
+    {% if erro %}
+      <div class="mt-6 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm px-4 py-3">{{ erro }}</div>
+    {% endif %}
+
+    <form method="post" action="/ferramentas/nova" enctype="multipart/form-data" class="mt-7 space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-2">Título do Anúncio</label>
+        <input name="titulo" required value="{{ form.titulo if form else '' }}" placeholder="Ex: Furadeira de Impacto Bosch"
+               class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Categoria</label>
+          <select name="id_categoria" required class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm bg-white">
+            <option value="">Selecione</option>
+            {% for c in categorias %}
+              <option value="{{ c.id_categoria }}" {% if form and form.id_categoria == c.id_categoria %}selected{% endif %}>{{ c.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Estado de Conservação</label>
+          <select name="estado_conservacao" required class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm bg-white">
+            <option value="">Selecione</option>
+            {% for e in estados %}
+              <option value="{{ e }}" {% if form and form.estado_conservacao == e %}selected{% endif %}>{{ e }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Voltagem</label>
+          <select name="voltagem" class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm bg-white">
+            <option value="">Não se aplica</option>
+            {% for v in voltagens %}
+              <option value="{{ v }}">{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Valor da Diária (R$)</label>
+          <input name="preco_diaria" required value="{{ form.preco_diaria if form else '' }}" placeholder="0,00"
+                 class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-2">Fotos da Ferramenta</label>
+        <label class="flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/60 px-4 py-8 cursor-pointer hover:border-indigo-300 transition">
+          <span class="text-2xl text-gray-400">⇪</span>
+          <span class="text-sm font-medium text-gray-600">
+            <span class="text-indigo-600 font-semibold">Fazer upload de um arquivo</span> ou arraste e solte
+          </span>
+          <span class="text-[11px] text-gray-400">PNG, JPG, JPEG ou WEBP · até 5 fotos · otimização automática para 500 KB</span>
+          <input id="fotos" type="file" name="fotos" accept=".png,.jpg,.jpeg,.webp" multiple class="hidden">
+        </label>
+        <p id="lista-arquivos" class="text-xs text-gray-500 mt-2"></p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-2">Descrição</label>
+        <textarea name="descricao" rows="5" required placeholder="Descreva detalhes técnicos, restrições de uso, acessórios inclusos..."
+                  class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">{{ form.descricao if form else '' }}</textarea>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-3 rounded-lg transition">
+        Publicar Anúncio
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const campo = document.getElementById('fotos');
+  const lista = document.getElementById('lista-arquivos');
+  if (campo) campo.addEventListener('change', () => {
+    lista.textContent = Array.from(campo.files).map(f => f.name).join(', ');
+  });
+</script>
+{% endblock %}

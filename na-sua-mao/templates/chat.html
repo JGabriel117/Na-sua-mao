@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block titulo %}Mensagens - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-6xl mx-auto px-6 pt-8">
+  <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-3 min-h-[78vh]">
+
+      <aside class="border-r border-gray-100">
+        <div class="px-6 pt-6 pb-4">
+          <h1 class="text-2xl font-extrabold text-gray-900">Mensagens</h1>
+          <input placeholder="Buscar conversa..." class="mt-4 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm placeholder-gray-400">
+        </div>
+        <div class="divide-y divide-gray-50">
+          {% for c in conversas %}
+            {% set outro = c.locador if c.id_locatario == usuario.id_usuario else c.locatario %}
+            <a href="/chat?reserva={{ c.id_reserva }}"
+               class="flex items-center gap-3 px-6 py-4 hover:bg-gray-50 {% if selecionada and selecionada.id_reserva == c.id_reserva %}bg-indigo-50/60 border-l-2 border-indigo-600{% endif %}">
+              <div class="h-10 w-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                {{ outro.nome[:2]|upper }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ outro.nome }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ c.ferramenta.titulo }}</p>
+              </div>
+              {% if c.status_reserva == 'pendente' %}
+                <span class="text-[10px] font-bold text-indigo-600">Novo</span>
+              {% endif %}
+            </a>
+          {% else %}
+            <p class="px-6 py-8 text-sm text-gray-500">Nenhuma conversa ainda. Inicie uma reserva para falar com um vizinho.</p>
+          {% endfor %}
+        </div>
+      </aside>
+
+      <section class="md:col-span-2 flex flex-col">
+        {% if selecionada %}
+          {% set outro = selecionada.locador if selecionada.id_locatario == usuario.id_usuario else selecionada.locatario %}
+          <header class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ outro.nome[:2]|upper }}</div>
+              <div>
+                <p class="text-sm font-bold text-gray-900">{{ outro.nome }}</p>
+                <p class="text-[11px] text-emerald-600 font-medium">Online agora</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <a href="/denunciar?usuario_id={{ outro.id_usuario }}" class="text-xs font-medium text-red-600 hover:text-red-700">Denunciar usuário</a>
+              <a href="/ferramentas/{{ selecionada.id_ferramenta }}" class="text-xs font-medium text-gray-500 hover:text-gray-900">Ver anúncio</a>
+            </div>
+          </header>
+
+          <div class="px-6 py-4 bg-indigo-50/70 border-b border-indigo-100 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                {% if selecionada.ferramenta.foto_principal %}
+                  <img src="/static/uploads/{{ selecionada.ferramenta.foto_principal }}" class="h-full w-full object-contain p-1">
+                {% endif %}
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wide text-indigo-500">Solicitação de reserva</p>
+                <p class="text-sm font-bold text-gray-900">{{ selecionada.ferramenta.titulo }}</p>
+                <p class="text-xs text-gray-500">
+                  {{ (selecionada.data_prevista_fim - selecionada.data_prevista_inicio).days or 1 }} dia(s) · {{ selecionada.valor_total_calculado|brl }}
+                  · {{ ROTULOS_STATUS.get(selecionada.status_reserva) }}
+                </p>
+              </div>
+            </div>
+            {% if selecionada.id_locador == usuario.id_usuario and selecionada.status_reserva == 'pendente' %}
+              <div class="flex gap-2">
+                <form method="post" action="/reservas/{{ selecionada.id_reserva }}/recusar">
+                  <button class="bg-white border border-gray-200 text-gray-700 font-medium text-xs px-4 py-2 rounded-lg">Recusar</button>
+                </form>
+                <form method="post" action="/reservas/{{ selecionada.id_reserva }}/aprovar">
+                  <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg">Aprovar Aluguel</button>
+                </form>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="flex-1 px-6 py-6 space-y-4 overflow-y-auto max-h-[46vh]">
+            {% for m in selecionada.mensagens %}
+              <div class="flex {% if m.id_remetente == usuario.id_usuario %}justify-end{% endif %}">
+                <div class="max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed
+                  {% if m.id_remetente == usuario.id_usuario %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {{ m.conteudo }}
+                  <p class="text-[10px] mt-1 {% if m.id_remetente == usuario.id_usuario %}text-indigo-200{% else %}text-gray-400{% endif %}">{{ m.created_at|data_hora_br }}</p>
+                </div>
+              </div>
+            {% else %}
+              <div class="h-full flex items-center justify-center py-10">
+                <div class="text-center bg-white border border-gray-100 shadow-sm rounded-2xl px-8 py-8 max-w-sm">
+                  <div class="h-10 w-10 mx-auto rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">✉</div>
+                  <p class="font-bold text-gray-900 mt-3">Inicie a conversa</p>
+                  <p class="text-xs text-gray-500 mt-1">Envie uma mensagem para {{ outro.nome.split(' ')[0] }} para combinar os detalhes e horários da retirada.</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <form method="post" action="/chat/{{ selecionada.id_reserva }}/mensagem" class="px-6 py-4 border-t border-gray-100 flex items-center gap-3">
+            <input name="conteudo" placeholder="Escreva uma mensagem..." required
+                   class="flex-1 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 text-sm placeholder-gray-400">
+            <button type="submit" class="h-11 w-11 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center">➤</button>
+          </form>
+        {% else %}
+          <div class="flex-1 flex items-center justify-center px-8 text-center">
+            <div class="max-w-sm">
+              <div class="h-12 w-12 mx-auto rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">✉</div>
+              <p class="font-bold text-gray-900 mt-4">Selecione uma conversa</p>
+              <p class="text-sm text-gray-500 mt-1">Escolha uma reserva à esquerda para combinar a retirada e a devolução.</p>
+            </div>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

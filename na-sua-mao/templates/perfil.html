@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block titulo %}Meu perfil - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-6xl mx-auto px-6 pt-10">
+  <h1 class="text-3xl font-extrabold text-gray-900">Meu perfil</h1>
+  <p class="text-gray-500 mt-1">Gerencie seus dados, sua localização e a segurança da conta.</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-7">
+
+    <!-- Resumo -->
+    <aside class="lg:col-span-1 space-y-5">
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 text-center">
+        <div class="h-20 w-20 mx-auto rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-extrabold">
+          {{ usuario.nome[:2]|upper }}
+        </div>
+        <p class="text-lg font-bold text-gray-900 mt-4">{{ usuario.nome }}</p>
+        <p class="text-sm text-gray-500">{{ usuario.email }}</p>
+
+        <span class="inline-block mt-3 font-bold text-[10px] uppercase px-2.5 py-1 rounded-full
+          {% if usuario.is_admin %}bg-indigo-100 text-indigo-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+          {{ 'Administrador' if usuario.is_admin else 'Vizinho' }}
+        </span>
+
+        <div class="mt-5 pt-5 border-t border-gray-100 text-left space-y-2 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Membro desde</span>
+            <span class="font-semibold text-gray-900">{{ usuario.created_at|data_br }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Avaliação média</span>
+            <span class="font-semibold text-gray-900">
+              {% if stats.media %}{{ stats.media }} / 5 · {{ stats.total_avaliacoes }}{% else %}Sem avaliações{% endif %}
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Anúncios</span>
+            <span class="font-semibold text-gray-900">{{ stats.anuncios }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Reservas</span>
+            <span class="font-semibold text-gray-900">{{ stats.reservas }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Concluídas</span>
+            <span class="font-semibold text-gray-900">{{ stats.concluidas }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Status da conta</span>
+            <span class="font-bold text-[10px] uppercase px-2 py-0.5 rounded-full
+              {% if usuario.status_conta == 'ativa' %}bg-emerald-100 text-emerald-700{% else %}bg-gray-100 text-gray-500{% endif %}">
+              {{ usuario.status_conta }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+        <p class="text-[11px] font-bold uppercase tracking-wide text-gray-400">Acesso rápido</p>
+        <div class="mt-3 space-y-2 text-sm">
+          {% if usuario.is_admin %}
+            <a href="/admin" class="block text-indigo-600 font-semibold hover:text-indigo-700">Painel administrativo</a>
+            <a href="/admin/cadastrar" class="block text-gray-600 hover:text-gray-900">Cadastrar administrador</a>
+          {% else %}
+            <a href="/painel" class="block text-indigo-600 font-semibold hover:text-indigo-700">Meu painel</a>
+            <a href="/ferramentas/nova" class="block text-gray-600 hover:text-gray-900">Anunciar ferramenta</a>
+            <a href="/chat" class="block text-gray-600 hover:text-gray-900">Mensagens</a>
+          {% endif %}
+          <a href="/logout" class="block text-gray-600 hover:text-gray-900">Sair da conta</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Formulários -->
+    <section class="lg:col-span-2 space-y-6">
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-7">
+        <h2 class="text-lg font-bold text-gray-900">Dados da conta</h2>
+        <p class="text-sm text-gray-500 mt-1">O CPF não pode ser alterado depois do cadastro.</p>
+
+        {% if erro %}
+          <div class="mt-5 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm px-4 py-3">{{ erro }}</div>
+        {% endif %}
+
+        <form method="post" action="/perfil" class="mt-6 space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-semibold text-gray-800 mb-2">Nome Completo</label>
+              <input name="nome" required value="{{ form.nome if form else usuario.nome }}"
+                     class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-800 mb-2">E-mail</label>
+              <input name="email" type="email" required value="{{ form.email if form else usuario.email }}"
+                     class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-800 mb-2">CPF</label>
+              <input value="{{ usuario.cpf }}" readonly disabled
+                     class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-semibold text-gray-800 mb-2">CEP</label>
+              <input name="cep" maxlength="9" placeholder="00000-000"
+                     value="{{ form.cep if form else (usuario.cep or '') }}"
+                     class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+              <p class="text-[11px] text-gray-400 mt-1.5">Usamos o CEP para achar ferramentas perto de você quando o navegador não informa a localização.</p>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-3 rounded-lg transition">
+            Salvar alterações
+          </button>
+        </form>
+      </div>
+
+      <!-- Localização -->
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-7">
+        <h2 class="text-lg font-bold text-gray-900">Sua localização</h2>
+        <p class="text-sm text-gray-500 mt-1">Usada apenas no filtro de distância do catálogo; as coordenadas não aparecem para outros usuários.</p>
+
+        <div class="mt-5 rounded-xl bg-gray-50 border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-gray-900">
+              {% if usuario.latitude is none %}
+                Ainda não sabemos onde você está
+              {% elif usuario.origem_localizacao == 'cep' %}
+                Encontramos você pelo CEP {{ usuario.cep|cep_br }}
+              {% elif usuario.origem_localizacao == 'navegador' %}
+                Localização do navegador ativa
+              {% else %}
+                Localização definida
+              {% endif %}
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              {% if usuario.localizacao_atualizada_em %}
+                Atualizada em {{ usuario.localizacao_atualizada_em|data_hora_br }}
+              {% else %}
+                Autorize a localização ou cadastre seu CEP para ativar a busca por perto.
+              {% endif %}
+            </p>
+          </div>
+          <span class="self-start font-bold text-[10px] uppercase px-2.5 py-1 rounded-full
+            {% if usuario.latitude is not none %}bg-emerald-100 text-emerald-700{% else %}bg-amber-100 text-amber-800{% endif %}">
+            {{ 'Ativa' if usuario.latitude is not none else 'Pendente' }}
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 mt-4">
+          <button type="button" id="btn-localizacao"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg transition">
+            Usar minha localização
+          </button>
+          {% if usuario.cep %}
+            <button type="button" id="btn-cep"
+                    class="border border-gray-200 text-gray-700 font-medium text-xs px-4 py-2.5 rounded-lg hover:bg-gray-50">
+              Usar meu bairro pelo CEP
+            </button>
+          {% else %}
+            <span class="text-xs text-gray-500">Cadastre um CEP acima para usar essa opção.</span>
+          {% endif %}
+        </div>
+        <p id="msg-localizacao" class="hidden mt-3 text-xs font-medium"></p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-7">
+        <h2 class="text-lg font-bold text-gray-900">Segurança</h2>
+        <p class="text-sm text-gray-500 mt-1">Defina uma senha nova com pelo menos 6 caracteres.</p>
+
+        {% if erro_senha %}
+          <div class="mt-5 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm px-4 py-3">{{ erro_senha }}</div>
+        {% endif %}
+
+        <form method="post" action="/perfil/senha" class="mt-6 space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-gray-800 mb-2">Senha atual</label>
+            <input name="senha_atual" type="password" required
+                   class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-800 mb-2">Nova senha</label>
+              <input name="nova_senha" type="password" required placeholder="Mínimo 6 caracteres"
+                     class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm placeholder-gray-400">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-800 mb-2">Confirmar nova senha</label>
+              <input name="confirmacao" type="password" required
+                     class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm py-3 rounded-lg transition">
+            Alterar senha
+          </button>
+        </form>
+        <p class="text-center text-xs text-gray-500 mt-4">
+          Não lembra a senha atual? <a href="/recuperar-senha" class="text-indigo-600 font-semibold hover:text-indigo-700">Use a recuperação por e-mail e CPF</a>.
+        </p>
+      </div>
+
+      <!-- Avaliações recebidas -->
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-7">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-lg font-bold text-gray-900">Avaliações recebidas</h2>
+          {% if stats.media %}
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-extrabold text-gray-900">{{ stats.media }}</span>
+              <div>
+                <p class="estrelas text-amber-500 text-sm leading-none">{{ stats.media|round(0, 'floor')|int|estrelas }}</p>
+                <p class="text-[11px] text-gray-500 mt-1">{{ stats.total_avaliacoes }} avaliação(ões)</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="mt-5 space-y-4">
+          {% for a in avaliacoes_recebidas %}
+            <article id="avaliacao-{{ a.id_avaliacao }}" class="border border-gray-100 rounded-xl p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="h-9 w-9 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold">
+                    {{ (a.avaliador.nome if a.avaliador else 'Vizinho')[:2]|upper }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-900">{{ a.avaliador.nome if a.avaliador else 'Vizinho' }}</p>
+                    <p class="text-[11px] text-gray-400">{{ a.created_at|tempo_relativo }}</p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="estrelas text-amber-500 text-sm" aria-label="{{ a.nota }} de 5 estrelas">{{ a.nota|estrelas }}</p>
+                  <p class="text-[10px] text-gray-400 font-medium">{{ a.nota }}/5</p>
+                </div>
+              </div>
+              {% if a.comentario %}
+                <p class="text-sm text-gray-600 leading-relaxed mt-3">{{ a.comentario }}</p>
+              {% else %}
+                <p class="text-sm text-gray-400 italic mt-3">Sem comentário.</p>
+              {% endif %}
+              {% if not usuario.is_admin %}
+                <div class="mt-3 pt-3 border-t border-gray-50 text-right">
+                  <a href="/denunciar?avaliacao={{ a.id_avaliacao }}" class="text-[11px] font-semibold text-red-600 hover:text-red-700">
+                    Denunciar avaliação
+                  </a>
+                </div>
+              {% endif %}
+            </article>
+          {% else %}
+            <div class="rounded-xl bg-gray-50 border border-gray-100 px-4 py-6 text-center">
+              <p class="text-sm font-medium text-gray-700">Você ainda não recebeu avaliações.</p>
+              <p class="text-xs text-gray-500 mt-1">Elas aparecem aqui quando uma locação é concluída e avaliada.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

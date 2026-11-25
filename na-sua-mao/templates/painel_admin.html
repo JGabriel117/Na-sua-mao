@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block titulo %}Painel administrativo - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-6xl mx-auto px-6 pt-10">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900">Painel administrativo</h1>
+      <p class="text-gray-500 mt-1">Moderação da comunidade, denúncias, cadastro de gestores e auditoria.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="/" class="border border-gray-200 text-gray-700 font-medium text-sm px-4 py-2.5 rounded-lg hover:bg-gray-50">Ver catálogo</a>
+      <a href="/admin/cadastrar" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg">Novo administrador</a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-7">
+    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm px-6 py-5">
+      <p class="text-[11px] font-bold uppercase tracking-wide text-gray-400">Usuários</p>
+      <p class="text-3xl font-extrabold text-gray-900 mt-2">{{ total_usuarios }}</p>
+    </div>
+    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm px-6 py-5">
+      <p class="text-[11px] font-bold uppercase tracking-wide text-gray-400">Administradores</p>
+      <p class="text-3xl font-extrabold text-gray-900 mt-2">{{ total_admins }}</p>
+    </div>
+    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm px-6 py-5">
+      <p class="text-[11px] font-bold uppercase tracking-wide text-gray-400">Anúncios ativos</p>
+      <p class="text-3xl font-extrabold text-gray-900 mt-2">{{ total_ferramentas }}</p>
+    </div>
+    <div class="bg-white border border-amber-100 rounded-2xl shadow-sm px-6 py-5">
+      <p class="text-[11px] font-bold uppercase tracking-wide text-amber-700">Denúncias em análise</p>
+      <p class="text-3xl font-extrabold text-amber-700 mt-2">{{ total_denuncias_abertas }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+    <!-- Denúncias -->
+    <section id="denuncias" class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-gray-900">Denúncias pendentes</h2>
+        <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+          {{ denuncias_abertas|length }} em análise
+        </span>
+      </div>
+
+      <div class="mt-4 space-y-4">
+        {% for d in denuncias_abertas %}
+          <article class="border border-gray-100 rounded-xl p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm font-semibold text-gray-900">{{ d.motivo }}</p>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full
+                {{ CLASSES_BADGE_DENUNCIA.get(d.status_denuncia, 'bg-gray-100 text-gray-500') }}">
+                {{ ROTULOS_DENUNCIA.get(d.status_denuncia, d.status_denuncia) }}
+              </span>
+            </div>
+
+            <p class="text-xs text-gray-600 mt-2 leading-relaxed">{{ d.descricao }}</p>
+
+            {% if d.avaliacao %}
+              <div class="mt-3 rounded-lg bg-amber-50 border border-amber-100 p-3">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-[11px] font-bold uppercase tracking-wide text-amber-700">Avaliação denunciada #{{ d.avaliacao.id_avaliacao }}</p>
+                  <p class="estrelas text-amber-500 text-xs" aria-label="{{ d.avaliacao.nota }} de 5 estrelas">{{ d.avaliacao.nota|estrelas }}</p>
+                </div>
+                <p class="text-xs text-gray-700 mt-1.5">{{ d.avaliacao.comentario or 'Sem comentário.' }}</p>
+                <p class="text-[11px] text-gray-500 mt-1">
+                  Avaliador: {{ d.avaliacao.avaliador.nome if d.avaliacao.avaliador else '#' ~ d.avaliacao.id_avaliador }}
+                  · Avaliado: {{ d.avaliacao.avaliado.nome if d.avaliacao.avaliado else '#' ~ d.avaliacao.id_avaliado }}
+                </p>
+              </div>
+            {% endif %}
+
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-gray-500">
+              <p>Denunciante: <span class="font-medium text-gray-700">{{ d.denunciante.nome if d.denunciante else '#' ~ d.id_denunciante }}</span></p>
+              <p>
+                Denunciado:
+                {% if d.denunciado %}
+                  <a href="/admin/usuarios/{{ d.denunciado.id_usuario }}" class="font-medium text-indigo-600 hover:text-indigo-700">{{ d.denunciado.nome }} · abrir perfil</a>
+                {% else %}não informado{% endif %}
+              </p>
+              <p>
+                Anúncio:
+                {% if d.ferramenta %}
+                  <a href="/ferramentas/{{ d.ferramenta.id_ferramenta }}" class="font-medium text-indigo-600 hover:text-indigo-700">#{{ d.ferramenta.id_ferramenta }} · {{ d.ferramenta.titulo }} · abrir anúncio</a>
+                {% else %}não vinculado{% endif %}
+              </p>
+              <p>Recebida em {{ d.created_at|data_hora_br }}</p>
+            </div>
+
+            <div class="mt-4 border-t border-gray-100 pt-3">
+              <form method="post" action="/admin/denuncias/{{ d.id_denuncia }}/aprovar">
+                <label class="block text-[11px] font-semibold text-gray-600 mb-1">Observação da análise (opcional)</label>
+                <input name="observacao" maxlength="500" placeholder="Resumo da decisão da moderação"
+                       class="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs mb-3">
+
+                <div class="space-y-2 mb-3">
+                  {% if d.ferramenta %}
+                    <label class="flex items-start gap-2 text-[11px] text-gray-700">
+                      <input type="checkbox" name="suspender_anuncio" value="1" class="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-red-600">
+                      <span>Suspender anúncio <span class="block text-[10px] text-gray-400">Remove o anúncio do catálogo e apaga reservas, chats, avaliações e contratos vinculados.</span></span>
+                    </label>
+                  {% endif %}
+                  {% if d.denunciado %}
+                    <label class="flex items-start gap-2 text-[11px] text-gray-700">
+                      <input type="checkbox" name="suspender_usuario" value="1" class="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-red-600">
+                      <span>Suspender conta do denunciado <span class="block text-[10px] text-gray-400">O usuário perde o acesso até ser reativado pela administração.</span></span>
+                    </label>
+                  {% endif %}
+                </div>
+
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs px-4 py-2 rounded-lg">Aprovar denúncia</button>
+              </form>
+
+              <form method="post" action="/admin/denuncias/{{ d.id_denuncia }}/rejeitar" class="mt-2">
+                <button type="submit" class="border border-gray-200 text-gray-700 font-medium text-xs px-4 py-2 rounded-lg hover:bg-gray-50">Rejeitar denúncia</button>
+              </form>
+            </div>
+          </article>
+        {% else %}
+          <p class="text-sm text-gray-500 py-6">Nenhuma denúncia em análise.</p>
+        {% endfor %}
+      </div>
+
+      {% if denuncias_resolvidas %}
+        <details class="mt-5 border-t border-gray-100 pt-4">
+          <summary class="text-sm font-semibold text-gray-700 cursor-pointer">Histórico de denúncias analisadas</summary>
+          <div class="mt-3 divide-y divide-gray-50">
+            {% for d in denuncias_resolvidas %}
+              <div class="py-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-xs font-medium text-gray-700">{{ d.motivo }}</p>
+                  <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full
+                    {{ CLASSES_BADGE_DENUNCIA.get(d.status_denuncia, 'bg-gray-100 text-gray-500') }}">
+                    {{ ROTULOS_DENUNCIA.get(d.status_denuncia, d.status_denuncia) }}
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                  #{{ d.id_denuncia }} · {{ d.created_at|data_hora_br }}
+                  {% if d.ferramenta %} · {{ d.ferramenta.titulo }}{% endif %}
+                  {% if d.avaliacao %} · avaliação #{{ d.avaliacao.id_avaliacao }}{% endif %}
+                  {% if d.denunciado %} · <a href="/admin/usuarios/{{ d.denunciado.id_usuario }}" class="text-indigo-600 hover:text-indigo-700">perfil</a>{% endif %}
+                </p>
+              </div>
+            {% endfor %}
+          </div>
+        </details>
+      {% endif %}
+    </section>
+
+    <section class="space-y-6">
+      <!-- Auditoria -->
+      <div id="auditoria" class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-bold text-gray-900">Logs de auditoria</h2>
+        <div class="mt-4 max-h-96 overflow-y-auto divide-y divide-gray-50">
+          {% for log in logs %}
+            <div class="py-3">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{{ log.acao }}</span>
+                <span class="text-[11px] text-gray-400">{{ log.created_at|data_hora_br }}</span>
+              </div>
+              <p class="text-xs text-gray-600 mt-1.5">{{ log.detalhe }}</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">
+                IP {{ log.ip or '-' }} ·
+                {% if log.usuario %}usuário #{{ log.usuario_id }} ({{ log.usuario.email }}){% elif log.usuario_id %}usuário #{{ log.usuario_id }}{% else %}ator não autenticado{% endif %}
+              </p>
+            </div>
+          {% else %}
+            <p class="text-sm text-gray-500 py-6">Nenhum registro ainda.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Administradores -->
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-bold text-gray-900">Administradores ativos</h2>
+        <ul class="mt-4 divide-y divide-gray-50">
+          {% for a in admins %}
+            <li class="py-3 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-gray-900">{{ a.nome }}</p>
+                <p class="text-xs text-gray-500">{{ a.email }} · CPF {{ a.cpf }}</p>
+              </div>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full
+                {% if a.status_conta == 'ativa' %}bg-emerald-100 text-emerald-700{% else %}bg-gray-100 text-gray-500{% endif %}">
+                {{ a.status_conta }}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

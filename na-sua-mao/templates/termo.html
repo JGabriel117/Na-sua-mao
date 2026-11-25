@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titulo %}Termo de Responsabilidade - Na sua mão{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-4xl mx-auto px-6 pt-10">
+  <a href="{{ '/ferramentas/' ~ voltar_para_anuncio if voltar_para_anuncio else '/' }}"
+     class="text-sm font-medium text-gray-500 hover:text-gray-900">← Voltar</a>
+
+  <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-8 mt-4">
+    <h1 class="text-2xl font-extrabold text-gray-900">Termo de Responsabilidade e Isenção de Segurança</h1>
+    <p class="text-gray-500 mt-2 text-sm">
+      Leia com atenção antes de marcar o aceite no checkout da reserva. Este documento é opcional
+      para leitura, mas o aceite é obrigatório para concluir a solicitação.
+    </p>
+
+    <div class="mt-6 border-t border-gray-100 pt-6">
+      {% include "_termo_conteudo.html" %}
+    </div>
+
+    <div class="mt-8 flex flex-wrap gap-3">
+      {% if voltar_para_anuncio %}
+        <a href="/ferramentas/{{ voltar_para_anuncio }}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-3 rounded-lg transition">
+          Voltar ao anúncio
+        </a>
+      {% else %}
+        <a href="/"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-3 rounded-lg transition">
+          Ir para o catálogo
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

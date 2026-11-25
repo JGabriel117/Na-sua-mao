@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Na sua mão{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          colors: { marca: { DEFAULT: '#4F46E5', escura: '#4338CA', clara: '#EEF2FF' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    input, select, textarea { outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+    .estrelas { letter-spacing: .08em; }
+    dialog::backdrop { background: rgba(17, 24, 39, .55); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+<header class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+    <a href="/" class="text-lg font-extrabold text-indigo-600 tracking-tight">Na sua mão</a>
+
+    {% if usuario and usuario.is_admin %}
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+        <a href="/admin" class="text-indigo-600 font-semibold">Painel Admin</a>
+        <a href="/admin#denuncias" class="hover:text-gray-900 transition">Moderação</a>
+        <a href="/admin#auditoria" class="hover:text-gray-900 transition">Auditoria</a>
+      </nav>
+    {% else %}
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+        <a href="/" class="hover:text-gray-900 transition">Início</a>
+        <a href="/#catalogo" class="text-indigo-600 font-semibold">Alugar</a>
+        <a href="/como-funciona" class="hover:text-gray-900 transition">Como Funciona</a>
+        <a href="/como-funciona#duvidas" class="hover:text-gray-900 transition">Dúvidas</a>
+      </nav>
+    {% endif %}
+
+    <div class="flex items-center gap-4 text-sm font-medium">
+      {% if usuario %}
+        {% if usuario.is_admin %}
+          <a href="/admin" class="text-gray-600 hover:text-gray-900">Painel Admin</a>
+        {% else %}
+          <a href="/ferramentas/nova" class="text-gray-600 hover:text-gray-900 hidden sm:inline">Anunciar</a>
+          <a href="/chat" class="text-gray-600 hover:text-gray-900 hidden sm:inline">Mensagens</a>
+          <a href="/painel" class="text-gray-600 hover:text-gray-900">Painel</a>
+        {% endif %}
+        <a href="/perfil" class="text-gray-600 hover:text-gray-900">Perfil</a>
+        <a href="/logout" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-full transition">Sair</a>
+      {% else %}
+        <a href="/cadastro" class="text-gray-600 hover:text-gray-900">Criar conta</a>
+        <a href="/login" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-full transition">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% if mensagem %}
+  <div class="max-w-6xl mx-auto px-6 w-full mt-4">
+    <div role="status" aria-live="polite"
+         class="flex items-start gap-3 rounded-xl px-4 py-3 text-sm font-medium border
+      {% if tipo_mensagem == 'erro' %}bg-red-50 border-red-100 text-red-700{% elif tipo_mensagem == 'aviso' %}bg-amber-50 border-amber-100 text-amber-800{% else %}bg-emerald-50 border-emerald-100 text-emerald-700{% endif %}">
+      <span class="mt-0.5 font-bold">{% if tipo_mensagem == 'erro' %}!{% elif tipo_mensagem == 'aviso' %}i{% else %}✓{% endif %}</span>
+      <p class="flex-1">{{ mensagem }}</p>
+      <button type="button" onclick="this.closest('div[role=status]').remove()" aria-label="Fechar mensagem"
+              class="text-current opacity-50 hover:opacity-100">×</button>
+    </div>
+  </div>
+{% endif %}
+
+<main class="flex-1 w-full">
+  {% block conteudo %}{% endblock %}
+</main>
+
+<footer class="border-t border-gray-100 bg-white mt-16">
+  <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+    <div>
+      <p class="text-lg font-extrabold text-indigo-600">Na sua mão</p>
+      <p class="mt-1">Compartilhe ferramentas com quem está por perto.</p>
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-6">
+      <a href="/como-funciona" class="hover:text-gray-900">Como funciona</a>
+      <a href="/termo" class="hover:text-gray-900">Termo de Responsabilidade</a>
+      <a href="/" class="hover:text-gray-900">Catálogo</a>
+    </div>
+  </div>
+</footer>
+
+{% if usuario and not usuario.is_admin %}
+  <div id="geo-auto" class="hidden"
+       data-tem-coords="{{ '1' if usuario.latitude is not none and usuario.longitude is not none else '0' }}"
+       data-origem="{{ usuario.origem_localizacao or '' }}"
+       data-cep="{{ usuario.cep or '' }}"></div>
+
+  <form id="form-geo-auto" method="post" action="/perfil/localizacao" class="hidden">
+    <input type="hidden" name="latitude" value="">
+    <input type="hidden" name="longitude" value="">
+    <input type="hidden" name="destino" value="{{ request.url.path }}">
+  </form>
+
+  <form id="form-cep-auto" method="post" action="/perfil/localizacao/cep" class="hidden">
+    <input type="hidden" name="destino" value="{{ request.url.path }}">
+  </form>
+{% endif %}
+
+<script src="/static/js/carrossel.js" defer></script>
+{% if usuario and not usuario.is_admin %}<script src="/static/js/geo_auto.js" defer></script>{% endif %}
+
+</body>
+</html>
