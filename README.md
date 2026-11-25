@@ -26,10 +26,10 @@ Plataforma web para compartilhamento e locação de ferramentas entre vizinhos, 
 
 ## Como executar o projeto
    
-   pip install -r requirements.txt
-   python scripts/init_db.py
-   python scripts/seed.py
-   python run.py
+   pip install -r requirements.txt\
+   python scripts/init_db.py\
+   python scripts/seed.py\
+   python run.py\
    http://localhost:8000
 
 ## Como executar os testes funcionais
@@ -38,5 +38,5 @@ Plataforma web para compartilhamento e locação de ferramentas entre vizinhos, 
 
 ## Conta admin
 
-   Usuário: Admin@email.com
+   Usuário: Admin@email.com\
    Senha: admin123
